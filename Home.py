@@ -11,9 +11,6 @@ openai_api_key = st.secrets["openai_api_key"]
 database_uri = st.secrets["database_uri"]
 database_connection = None
 
-st.write("openai_api_key:", st.secrets["openai_api_key"])
-st.write("database_uri:", st.secrets["database_uri"])
-
 st.title('Text to SQL to text')
 
 st.markdown("<p style='font-size: 22px;'>Some queries you can try:</p>", unsafe_allow_html=True)
