@@ -2,4 +2,4 @@ streamlit
 langchain
 openai
 matplotlib
-psycopg2
+psycog2-binary
