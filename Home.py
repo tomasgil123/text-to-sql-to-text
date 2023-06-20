@@ -2,23 +2,17 @@ import streamlit as st
 from langchain import SQLDatabase
 from langchain.chat_models import ChatOpenAI
 import openai
-# Dotenv library break the app when it is deployed to Stremlit community cloud
-# from dotenv import load_dotenv, find_dotenv
 import os
 from text_to_sql_to_text import TextToSQLToTextChain
 from text_to_chart import print_chart_to_screen
 
-# we load the env variables
-# load_dotenv(): This function is responsible for loading the environment variables from the env 
-# file into the Python script's environment
-# _ is typically used as a placeholder variable when the actual value is not needed
-#_ = load_dotenv(find_dotenv())
-
-#openai_api_key = os.environ['OPENAI_API_KEY']
-#database_uri = os.environ['DATABASE_URI']
-openai_api_key = None
-database_uri = None
+# these secrets come from the streamlit secrets.toml file
+openai_api_key = st.secrets["openai_api_key"]
+database_uri = st.secrets["database_uri"]
 database_connection = None
+
+st.write("openai_api_key:", st.secrets["openai_api_key"])
+st.write("database_uri:", st.secrets["database_uri"])
 
 st.title('Text to SQL to text')
 
@@ -73,8 +67,12 @@ def print_chart(text):
 
 # if openai_api_key and database_uri are not None, then we load the chain
 if openai_api_key != "" and database_uri != "":
+    
+    # we need to store the openai api key in a env variable called OPENAI_API_KEY
     os.environ['OPENAI_API_KEY'] = openai_api_key
+    # we also need to set the openai api key in the openai library in order for print_chart to work
     openai.api_key = openai_api_key
+
     create_database_connection(database_uri=database_uri)
     llm = load_model()
     chain = load_chain(_llm=llm, _db=database_connection)
