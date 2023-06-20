@@ -74,7 +74,7 @@ def print_chart(text):
 # if openai_api_key and database_uri are not None, then we load the chain
 if openai_api_key != "" and database_uri != "":
     os.environ['OPENAI_API_KEY'] = openai_api_key
-    # openai.api_key = openai_api_key
+    openai.api_key = openai_api_key
     create_database_connection(database_uri=database_uri)
     llm = load_model()
     chain = load_chain(_llm=llm, _db=database_connection)
