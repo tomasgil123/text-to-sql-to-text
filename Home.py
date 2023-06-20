@@ -1,10 +1,10 @@
 import streamlit as st
 from langchain import SQLDatabase
 from langchain.chat_models import ChatOpenAI
-import openai
+# import openai
 import os
 from text_to_sql_to_text import TextToSQLToTextChain
-from text_to_chart import print_chart_to_screen
+from text_to_chart import TextToChart
 
 # these secrets come from the streamlit secrets.toml file
 openai_api_key = st.secrets["openai_api_key"]
@@ -16,6 +16,7 @@ st.title('Text to SQL to text')
 st.markdown("<p style='font-size: 22px;'>Some queries you can try:</p>", unsafe_allow_html=True)
 
 st.markdown("<p style='font-size: 18px;'>When was last time user tomas.gil@agileengine.com watch a video?</p>", unsafe_allow_html=True)
+
 st.markdown("<p style='font-size: 18px;'>How many courses do we have?</p>", unsafe_allow_html=True)
 st.markdown("<p style='font-size: 18px;'>Who are the three student with most videos watched in the last 60 days?</p>", unsafe_allow_html=True)
 # if openai_api_key is null, then we ask the user to input the key
@@ -58,9 +59,10 @@ def run_query(query):
     st.write(response)
     return response
 
-@st.cache_data
-def print_chart(text):
-    print_chart_to_screen(text)
+@st.cache_resource  # 👈 Add the caching decorator
+def load_text_to_chart():
+    text_to_chart = TextToChart(openai_api_key=st.secrets["openai_api_key"])
+    return text_to_chart
 
 # if openai_api_key and database_uri are not None, then we load the chain
 if openai_api_key != "" and database_uri != "":
@@ -68,7 +70,7 @@ if openai_api_key != "" and database_uri != "":
     # we need to store the openai api key in a env variable called OPENAI_API_KEY
     os.environ['OPENAI_API_KEY'] = openai_api_key
     # we also need to set the openai api key in the openai library in order for print_chart to work
-    openai.api_key = openai_api_key
+    # openai.api_key = openai_api_key
 
     create_database_connection(database_uri=database_uri)
     llm = load_model()
@@ -77,6 +79,7 @@ if openai_api_key != "" and database_uri != "":
     # if user entered a query, then we run the query
     if query:
         response = run_query(query)
+        text_to_chart = load_text_to_chart()
         # display a button to ask the user if want the query result to be displayed as chart
         if st.button("Display as chart"):
-            print_chart(text=response)
+            text_to_chart.print_chart_to_screen(text=response)
