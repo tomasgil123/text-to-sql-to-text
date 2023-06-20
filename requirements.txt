@@ -1,6 +1,5 @@
 streamlit
 langchain
 openai
-dotenv
 os
 matplotlib

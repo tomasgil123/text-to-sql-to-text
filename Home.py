@@ -2,7 +2,8 @@ import streamlit as st
 from langchain import SQLDatabase
 from langchain.chat_models import ChatOpenAI
 import openai
-from dotenv import load_dotenv, find_dotenv
+# Dotenv library break the app when it is deployed to Stremlit community cloud
+# from dotenv import load_dotenv, find_dotenv
 import os
 from text_to_sql_to_text import TextToSQLToTextChain
 from text_to_chart import print_chart_to_screen
@@ -11,10 +12,12 @@ from text_to_chart import print_chart_to_screen
 # load_dotenv(): This function is responsible for loading the environment variables from the env 
 # file into the Python script's environment
 # _ is typically used as a placeholder variable when the actual value is not needed
-_ = load_dotenv(find_dotenv())
+#_ = load_dotenv(find_dotenv())
 
-openai_api_key = os.environ['OPENAI_API_KEY']
-database_uri = os.environ['DATABASE_URI']
+#openai_api_key = os.environ['OPENAI_API_KEY']
+#database_uri = os.environ['DATABASE_URI']
+openai_api_key = None
+database_uri = None
 database_connection = None
 
 st.title('Text to SQL to text')
@@ -26,16 +29,13 @@ st.markdown("<p style='font-size: 18px;'>How many courses do we have?</p>", unsa
 st.markdown("<p style='font-size: 18px;'>Who are the three student with most videos watched in the last 60 days?</p>", unsafe_allow_html=True)
 # if openai_api_key is null, then we ask the user to input the key
 # if openai_api_key is not null, then we do not display the input box
-openai_api_key_input= None
 if openai_api_key is None:
-  openai_api_key_input = st.text_input("Enter your open ai api key", "")
+  openai_api_key = st.text_input("Enter your open ai api key")
 
 # if database_uri is null, then we ask the user to input the key
 # if database_uri is not null, then we do not display the input box
-database_uri_input = None
 if database_uri is None:
-  database_uri_input = st.text_input("Enter your database uri", "")
-
+  database_uri = st.text_input("Enter your database uri")
 
 def create_database_connection(database_uri):
     global database_connection
@@ -51,8 +51,7 @@ def create_database_connection(database_uri):
         database_connection = SQLDatabase.from_uri(database_uri, schema=schema, include_tables=include_tables)
 
 @st.cache_resource  # 👈 Add the caching decorator
-def load_model(openai_api_key):
-    openai.api_key = openai_api_key
+def load_model():
     # we load the model
     llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0, verbose=True)
     return llm
@@ -72,10 +71,12 @@ def run_query(query):
 def print_chart(text):
     print_chart_to_screen(text)
 
-# if openai_api_key_input and database_uri_input are not None, then we load the chain
-if openai_api_key is not None and database_uri is not None:
+# if openai_api_key and database_uri are not None, then we load the chain
+if openai_api_key != "" and database_uri != "":
+    os.environ['OPENAI_API_KEY'] = openai_api_key
+    # openai.api_key = openai_api_key
     create_database_connection(database_uri=database_uri)
-    llm = load_model(openai_api_key=openai_api_key)
+    llm = load_model()
     chain = load_chain(_llm=llm, _db=database_connection)
     query = st.text_input("Enter your query", "")
     # if user entered a query, then we run the query
