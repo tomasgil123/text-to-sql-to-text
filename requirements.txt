@@ -1,2 +1,6 @@
 streamlit
-pandas
+langchain
+openai
+dotenv
+os
+matplotlib
